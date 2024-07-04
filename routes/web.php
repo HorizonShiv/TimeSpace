@@ -31,6 +31,9 @@ Route::controller(LoginRegisterController::class)->group(function () {
     Route::get('/Register', 'register')->name('register');
     Route::post('/store', 'store')->name('store');
     Route::post('/logout', 'logout')->name('logout');
+
+    Route::get('verify/{email}', 'authenticateWithEmail')->name('authenticateWithEmail');
+    Route::post('ChangePasswordEmail', 'ChangePasswordEmail')->name('ChangePasswordEmail');
 });
 
 

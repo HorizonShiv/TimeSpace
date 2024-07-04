@@ -143,8 +143,8 @@ class AssetsController extends Controller
                         $CategoryName = 'social';
 
                         $PublisherMaster = PublisherMaster::where('category_id', $Connection->category_id)->get();
-                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
-                        // $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
+                        $htmlFieldName .= '<p class="text-base font-normal w-32"
+                        input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
                         $htmlField .= '<select id="publisher_' . $Connection->CategoryMaster->id . '_' . $temp . '" onchange="getPublisherAdType(' . $Connection->CategoryMaster->id . ',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
                         $htmlField .= '<option selected disabled>Select Publisher</option>';
                         foreach ($PublisherMaster as $Publisher) {
@@ -431,7 +431,7 @@ class AssetsController extends Controller
                             $Category = CategoryMaster::where('id', $Asset->category_id)->first();
                             $AdvertisementTypeSelected = AdvertisementType::where('id', $Asset->advertisement_id)->first();
                             // dd($AdvertisementTypeSelected->toArray());
-                            
+
                             $FlightConnection = FlightConnection::where('id', $Asset->flight_connection_id)->first();
 
 

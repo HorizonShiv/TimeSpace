@@ -58,6 +58,25 @@ class LoginRegisterController extends Controller
         return redirect()->route('login')
             ->withSuccess('You have logged out successfully!');;
     }
+
+    public function authenticateWithEmail(String $email)
+    {
+        session()->put('email', $email);
+        session()->put('success', 'OTP sent successfully');
+        return view('authenticateWithEmail');
+    }
+
+    public function ChangePasswordEmail(Request $request)
+    {
+        $UserEmail = $request->session()->get('email');
+        $User = User::where('email', base64_decode($UserEmail))->first();
+        if ($User) {
+
+            User::where('email', '=', $User->email)->update(['password' => Hash::make($request->password)]);
+            $request->session()->regenerate();
+            return redirect()->route('login');
+        }
+    }
     public function store(Request $request)
     {
 
