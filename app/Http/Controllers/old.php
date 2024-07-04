@@ -30,7 +30,7 @@ class AssetsController extends Controller
     {
         // dd($request->toArray());
         $CampaignData = Campaign::with("Flight", "FlightConnection")->where('id', $request->campaign)->get();
-        return view('assets-setup', compact('CampaignData'));
+        return view('asset.add', compact('CampaignData'));
     }
 
     /**
@@ -81,7 +81,7 @@ class AssetsController extends Controller
             }
         }
 
-        // return view('campaign-details', compact('Campaigns', 'id', 'success'));
+        // return view('campaign.dashboard', compact('Campaigns', 'id', 'success'));
         // return redirect()->action([TeamController::class, 'managePeople'], compact('success'));
         return redirect()->route('campaign-show', ['id' => $id, 'success' => $success]);
     }
@@ -330,7 +330,7 @@ class AssetsController extends Controller
         }
         // dd($html);
 
-        return view('assets-setup', compact('CampaignData', 'html', 'id', 'tags'));
+        return view('asset.add', compact('CampaignData', 'html', 'id', 'tags'));
     }
 
     /**
@@ -1455,7 +1455,7 @@ class AssetsController extends Controller
             }
         }
 
-        return view('edit-assets', compact('CampaignData', 'html', 'id'));
+        return view('asset.edit', compact('CampaignData', 'html', 'id'));
     }
 
     /**
@@ -1563,7 +1563,7 @@ class AssetsController extends Controller
         // }
         // processAssets($request->NewAdType);
 
-        // return view('campaign-details', compact('Campaigns', 'id', 'success'));
+        // return view('campaign.dashboard', compact('Campaigns', 'id', 'success'));
         // return redirect()->action([TeamController::class, 'managePeople'], compact('success'));
         return redirect()->route('campaign-show', ['id' => $id, 'success' => $success]);
     }

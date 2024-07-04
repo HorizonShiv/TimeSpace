@@ -30,22 +30,38 @@
             </div>
             <div class="bg-[#EA33C0] h-[1.5px]"></div>
             <div class="pt-4 px-3 py-3">
+                @php
+                $user_name = Auth::user()->name;
+                $user_role = Auth::user()->role;
+                @endphp
                 <div class="flex gap-3">
                     <div
                         class="flex justify-center items-center w-[52px] h-[52px] rounded-full bg-[#C72BA4] border border-[#EA33C0]">
-                        <p class="text-3xl font-medium text-[#ffffff]">B</p>
+                        <p class="text-3xl font-medium text-[#ffffff]">{{ strtoupper(substr($user_name, 0, 1)) }}</p>
                     </div>
                     <div class="flex flex-col items-start">
-                        <p class="text-base font-semibold">Brad Wilton</p>
-                        <p class="text-base font-semibold">Project Manager</p>
+
+                        <p class="text-base font-semibold">{{ $user_name }}</p>
+                        <p class="text-base font-semibold">{{ $user_role }}</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-1 mt-3 ml-11">
-                    <p class="font-medium text-base text-left">My Notifications</p>
+                    <a href="{{ route('notification') }}" class="mb-2">
+                        <p class="text-[#000000] font-medium text-base text-left">
+                            My Notification
+                        </p>
+                    </a>
+
+                    {{-- {{ dd($notification) }} --}}
                     <div
                         class="bg-[#FF4848] w-[21px] h-[21px] flex justify-center items-center rounded-full text-white text-xs">
-                        3
+                        @php
+                        $notifications = \App\Models\notification::all();
+                        $notificationCount = $notifications->count();
+                    @endphp
+                        {{ $notificationCount }}
                     </div>
+
                 </div>
             </div>
             <div class="bg-[#EA33C0] h-[1.5px]"></div>
@@ -56,7 +72,7 @@
                     <p class="text-xl font-medium">Campaigns</p>
                 </div>
                 <div class="flex flex-col justify-start mt-4 ml-11">
-                    <a href="{{ route('Campaign.index') }}" class="mb-2">
+                    <a href="{{ route('campaign.index') }}" class="mb-2">
                         <p class="text-[#000000] font-medium text-base text-left">
                             Dashboard
                         </p>
@@ -76,7 +92,7 @@
             <div class="bg-[#EA33C0] h-[1.5px]"></div>
             <div id="Settings" class="px-6 py-5">
                 <div class="flex gap-6 items-center">
-                    <img src="{{ route('index') }}" class="w-[15px] h-[15px]" />
+                    <img src="{{ url('assets/sidebar/settings.png') }}" class="w-[15px] h-[15px]" />
                     <p class="text-xl font-medium">Settings</p>
                 </div>
                 <div class="flex flex-col justify-start mt-4 ml-11">

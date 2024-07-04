@@ -35,6 +35,11 @@ class FlightConnection extends Model
         return $this->belongsTo(CategoryMaster::class, 'category_id', 'id');
     }
 
+    public function flight()
+    {
+        return $this->belongsTo(Flight::class, 'flight_id', 'id');
+    }
+
 
     // public function AssestSetup()
     // {

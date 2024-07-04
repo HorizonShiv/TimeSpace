@@ -10,6 +10,9 @@ use App\Models\FlightConnection;
 use App\Models\Assets;
 use App\Models\Thumbnails;
 use App\Models\User;
+use App\Models\AssetParameters;
+use Illuminate\Support\Facades\DB;
+use App\Models\AdvertisementType;
 
 class CampaignController extends Controller
 {
@@ -19,7 +22,21 @@ class CampaignController extends Controller
     public function index()
     {
         $Campaigns = Campaign::with('CampaignLanguages', 'CampaignMember')->get();
-        return view('index', compact('Campaigns'));
+        $Campaign_id = Campaign::with('CampaignLanguages', 'CampaignMember')->pluck('id');
+        foreach ($Campaigns as $Campaign) {
+            $campaign_id = $Campaign->id;
+        }
+
+        $assetStatusCount = AssetParameters::with('Campaign')
+            ->whereIn('campaign_id', $Campaign_id)
+            ->select('status', DB::raw('count(*) as status_count'))
+            ->groupBy('status')
+            ->get();
+            
+
+        // dd($assetStatusCount);
+
+        return view('dashboard.index', compact('Campaigns', 'assetStatusCount'));
     }
     public function assetsManage($id, $lang, $type)
     {
@@ -33,11 +50,11 @@ class CampaignController extends Controller
 
         // $FlightConnections = $FlightConnection->toArray();
         // dd($FlightConnection->toArray());
-        return view('campaign-assets-manage', compact('FlightConnection', 'Campaign', 'FlightCount', 'AssetsCount', 'id', 'language', 'type'));
+        return view('asset.manage', compact('FlightConnection', 'Campaign', 'FlightCount', 'AssetsCount', 'id', 'language', 'type'));
     }
-    public function redirectCampaignSummery()
+    public function redirectsummery()
     {
-        // return view('campaignSummery');
+        // return view('summery');
     }
 
     public function AssetsBuilder($id, $lang, $type, $Adtype)
@@ -63,7 +80,7 @@ class CampaignController extends Controller
             ->get();
 
         // dd($FlightConnection->AssetParameters);
-        return view('assets-builder', compact('FlightConnection', 'Campaign', 'FlightCount', 'AssetsCount', 'id', 'language', 'type'));
+        return view('asset.build', compact('FlightConnection', 'Campaign', 'FlightCount', 'AssetsCount', 'id', 'language', 'type'));
     }
 
 
@@ -74,14 +91,11 @@ class CampaignController extends Controller
     {
         // $Clients = User::with('Team')->where('type', 'Client')->groupBy('team_id')->get();
         $Clients = User::with('Team')->select('team_id')->where('type', 'Client')->groupBy('team_id')->get();
-
-
-
         // dd($Clients);
 
         $Users = User::where('type', 'User')->get();
 
-        return view('add-campaign', compact('Clients', 'Users'));
+        return view('campaign.add', compact('Clients', 'Users'));
     }
 
     /**
@@ -154,7 +168,8 @@ class CampaignController extends Controller
                     'language' => $lang,
                 ]);
                 $CampaignLanguages->save();
-            };
+            }
+            ;
             // $Lang[]=$CampaignLanguages->language;
 
             // if ($request->CampaignImage) {
@@ -192,6 +207,10 @@ class CampaignController extends Controller
         }
     }
 
+    // public function assetsStatus() {
+
+    // }
+
     /**
      * Display the specified resource.
      */
@@ -199,8 +218,22 @@ class CampaignController extends Controller
     {
         $Campaigns = Campaign::with('CampaignLanguages', 'CampaignMember', 'Flight.FlightConnection.CategoryMaster', 'Assets.AdvertisementType.CategoryMaster', 'Assets.PublisherMaster')->where('id', $id)->first();
 
+        $campaign_id = $id;
+        $AssetsCount = AssetParameters::with('Campaign')->where('campaign_id', $id)->count();
+
+        $flightId = $Campaigns->Flight[0]->id;
+        $assetStatusCount = AssetParameters::with('Campaign')
+            ->where('campaign_id', $id)
+            ->select('status', DB::raw('count(*) as status_count'))
+            ->groupBy('status')
+            ->get();
+        // dd($assetStatusCount);
+        // dd($assetStatusCount);
+
         $FlightCount = $Campaigns->Flight->count();
         $AssetsCount = $Campaigns->Assets->count();
+        // $assetStatusCount = $Campaigns->AssetParameter->Status->count();
+        // dd($Campaigns->Assets);
         $enCounts = [
             'Awareness' => 0,
             'Consideration' => 0,
@@ -212,7 +245,6 @@ class CampaignController extends Controller
             'Consideration' => 0,
             'Trail' => 0
         ];
-
 
         foreach ($Campaigns->Flight as $Flights) {
             foreach ($Flights->FlightConnection as $Connection) {
@@ -251,8 +283,21 @@ class CampaignController extends Controller
         // $FlightCount=NULL;
         // $Campaigns = $CampaignData->toArray();
         // dd($Campaigns->Assets);
-        return view('campaign-details', compact('Campaigns', 'FlightCount', 'AssetsCount', 'enCounts', 'frCounts'));
+        return view('campaign.dashboard', compact('Campaigns', 'FlightCount', 'AssetsCount', 'enCounts', 'frCounts', 'assetStatusCount', 'flightId'));
     }
+
+    public function AssetsStatus(string $id)
+    {
+
+        $statusCounts = AssetParameters::select('flight_id', 'status', DB::raw('count(*) as count'))
+            ->where('campaign_id', $id)
+            ->whereIn('status', ['briefed', 'draft', 'progress', 'review', 'approved', 'trafficking', 'live'])
+            ->groupBy('flight_id', 'status')
+            ->get();
+
+        return view('campaign.dashboard', compact('assetsStatusCount'));
+    }
+
 
     public function imageUpdate(Request $request)
     {

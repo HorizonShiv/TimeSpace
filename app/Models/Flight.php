@@ -21,6 +21,7 @@ class Flight extends Model
         return $this->hasMany(FlightConnection::class, 'flight_id', 'id');
     }
 
+
     public function Assets()
     {
         return $this->belongsTo(Assets::class, 'flight_id', 'id');

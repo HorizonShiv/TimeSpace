@@ -13,11 +13,11 @@ class TeamController extends Controller
     {
         $Teams = Team::all();
         // dd($Teams);
-        return view('manage-team', compact("Teams"));
+        return view('team.manage-team', compact("Teams"));
     }
     public function create()
     {
-        return view('create-team');
+        return view('team.add');
     }
 
     public function store(Request $request)
@@ -41,15 +41,5 @@ class TeamController extends Controller
         }
     }
 
-    public function managePeople()
-    {
-        $Teams = Team::with('TeamMember.User')->has('TeamMember')->get();
-        // $myTeams = Team::with(['TeamMember' => function ($query) {
-        //     $query->where('type', 'Coworker');
-        // }, 'TeamMember.user'])
-        //     ->where('id', 3)
-        //     ->has('TeamMember')
-        //     ->get();
-        return view('manage-people', compact("Teams"));
-    }
+
 }

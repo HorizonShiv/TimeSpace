@@ -30,7 +30,10 @@ class Campaign extends Model
     }
     public function User()
     {
-        return $this->belongsTo(User::class, 'client_id', 'id');
+        return $this->belongsTo(User::class, 'client_id', 'team_id');
+    }
+    public function team(){
+        return $this->belongsTo(Team::class, 'client_id', 'id');
     }
 
     public function Flight()
@@ -39,7 +42,7 @@ class Campaign extends Model
     }
     public function FlightConnection()
     {
-        return $this->hasMany(FlightConnection::class, 'flight_id', 'id');
+        return $this->hasMany(FlightConnection::class, 'campaign_id', 'id');
     }
 
     public function Assets()

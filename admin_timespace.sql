@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: Jun 20, 2024 at 01:49 PM
+-- Generation Time: Jun 27, 2024 at 03:08 PM
 -- Server version: 5.7.39
 -- PHP Version: 8.2.0
 
@@ -107,30 +107,16 @@ INSERT INTO `advertisement_type` (`id`, `category_master_id`, `publisher_master_
 -- --------------------------------------------------------
 
 --
--- Table structure for table `assets`
+-- Table structure for table `assets_change_log`
 --
 
-CREATE TABLE `assets` (
+CREATE TABLE `assets_change_log` (
   `id` int(11) NOT NULL,
-  `campaign_id` int(11) DEFAULT NULL,
-  `flight_id` int(11) DEFAULT NULL,
-  `flight_connection_id` int(11) DEFAULT NULL,
-  `category_id` int(11) DEFAULT NULL,
-  `ad_title` varchar(255) DEFAULT NULL,
-  `ad_type` bigint(20) DEFAULT NULL,
-  `publisher_id` varchar(255) DEFAULT NULL,
-  `advertisement_id` int(11) DEFAULT NULL,
-  `ad_format` varchar(255) DEFAULT NULL,
-  `ad_size` varchar(255) DEFAULT NULL,
-  `colour` varchar(255) DEFAULT NULL,
-  `resolution` varchar(255) DEFAULT NULL,
-  `file_type` varchar(255) DEFAULT NULL,
-  `technical` varchar(255) DEFAULT NULL,
-  `social_spec_1` varchar(255) DEFAULT NULL,
-  `social_spec_2` varchar(255) DEFAULT NULL,
-  `social_spec_3` varchar(255) DEFAULT NULL,
-  `conversion` varchar(255) DEFAULT NULL,
-  `due_to_publisher` date DEFAULT NULL,
+  `assets_id` int(11) DEFAULT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `date` date DEFAULT NULL,
+  `type` varchar(255) DEFAULT NULL,
+  `time` time DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL
@@ -147,6 +133,7 @@ CREATE TABLE `assets_parameters` (
   `flight_connection_id` int(11) DEFAULT NULL,
   `assets_id` bigint(20) DEFAULT NULL,
   `conversion_location` varchar(255) DEFAULT NULL,
+  `ad_title` varchar(255) DEFAULT NULL,
   `cta` varchar(255) DEFAULT NULL,
   `clickthrougn_url` varchar(255) DEFAULT NULL,
   `utm` varchar(255) DEFAULT NULL,
@@ -177,7 +164,7 @@ CREATE TABLE `asset_setup` (
   `flight_connection_id` int(11) DEFAULT NULL,
   `category_id` int(11) DEFAULT NULL,
   `ad_type` int(11) DEFAULT NULL,
-  `publisher_id` int(11) DEFAULT NULL,
+  `publisher_id` varchar(255) DEFAULT NULL,
   `advertisement_id` int(11) DEFAULT NULL,
   `ad_format` varchar(255) DEFAULT NULL,
   `ad_size` varchar(255) DEFAULT NULL,
@@ -193,38 +180,6 @@ CREATE TABLE `asset_setup` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `asset_setup`
---
-
-INSERT INTO `asset_setup` (`id`, `campaign_id`, `flight_id`, `flight_connection_id`, `category_id`, `ad_type`, `publisher_id`, `advertisement_id`, `ad_format`, `ad_size`, `ad_bleed`, `ad_colour`, `ad_kbs`, `ad_duration`, `ad_filetype`, `ad_version`, `ad_publisher_specs`, `due_to_publisher`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 9, 15, 28, 1, NULL, 1, 1, '1:1', NULL, NULL, NULL, NULL, '1', NULL, '1', NULL, NULL, '2024-06-19 05:41:55', '2024-06-19 05:41:55', NULL),
-(2, 9, 15, 28, 1, NULL, 1, 3, '9:16', NULL, NULL, NULL, NULL, '2', NULL, '1', NULL, NULL, '2024-06-19 05:41:55', '2024-06-19 05:41:55', NULL),
-(3, 4, 19, 33, 1, NULL, 1, 1, '1:1', NULL, NULL, NULL, NULL, '1', NULL, '2', NULL, '2024-06-20', '2024-06-19 05:44:38', '2024-06-20 08:05:18', NULL),
-(4, 4, 19, 34, 2, NULL, 1, 30, '1', '1', '1', '1', NULL, NULL, '1', '2', '1', '2024-06-29', '2024-06-19 05:44:38', '2024-06-20 08:05:18', NULL),
-(5, 4, 20, 35, 5, NULL, 12, 43, '2', '2', '2', '2', NULL, NULL, '2', '2', '2', '2024-06-21', '2024-06-19 05:44:38', '2024-06-20 08:05:18', NULL),
-(6, 4, 20, 36, 6, NULL, 2, 49, NULL, '300x50', NULL, NULL, 'Initial 50', NULL, '1', '1', '1', '2024-06-20', '2024-06-19 05:44:38', '2024-06-20 08:05:18', NULL),
-(7, 4, 19, 33, 1, NULL, 1, 2, '1:1', NULL, NULL, NULL, NULL, '1', NULL, '1', NULL, '2024-06-21', '2024-06-19 05:50:09', '2024-06-20 08:05:18', NULL),
-(8, 12, 23, 44, 1, NULL, 1, 1, '1:1', NULL, NULL, NULL, NULL, '1', NULL, '2', NULL, NULL, '2024-06-19 07:55:29', '2024-06-19 07:55:29', NULL),
-(9, 12, 23, 45, 2, NULL, 1, 30, '1', '1', '1', '1', NULL, NULL, '1', '1', '1', NULL, '2024-06-19 07:55:29', '2024-06-19 07:55:29', NULL),
-(10, 12, 23, 46, 4, NULL, 1, 40, NULL, 'metric', NULL, NULL, NULL, NULL, '11', '1', NULL, NULL, '2024-06-19 07:55:29', '2024-06-19 07:55:29', NULL),
-(11, 12, 23, 47, 5, NULL, 1, 43, '1', '1', '1', '1', NULL, NULL, '1', '1', '1', NULL, '2024-06-19 07:55:29', '2024-06-19 07:55:29', NULL),
-(12, 4, 19, 33, 1, NULL, 1, 2, '1:1', NULL, NULL, NULL, NULL, '1', NULL, '1', NULL, '2024-06-21', '2024-06-20 07:42:38', '2024-06-20 08:05:18', NULL),
-(13, 7, 11, 20, 1, NULL, 1, 2, '1:1', NULL, NULL, NULL, NULL, '1', NULL, '12', NULL, NULL, '2024-06-20 07:55:34', '2024-06-20 07:55:34', NULL),
-(14, 7, 11, 21, 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2024-06-20 07:55:34', '2024-06-20 07:55:34', NULL),
-(15, 7, 12, 22, 3, NULL, 1, 38, NULL, NULL, NULL, NULL, NULL, NULL, '1', '1', NULL, NULL, '2024-06-20 07:55:34', '2024-06-20 07:55:34', NULL),
-(16, 7, 11, 20, 1, NULL, 1, 2, '1:1', NULL, NULL, NULL, NULL, '1', NULL, '12', NULL, NULL, '2024-06-20 07:55:49', '2024-06-20 07:55:49', NULL),
-(17, 7, 11, 21, 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2024-06-20 07:55:49', '2024-06-20 07:55:49', NULL),
-(18, 7, 12, 22, 3, NULL, 1, 37, NULL, NULL, NULL, NULL, NULL, NULL, '1', '1', NULL, NULL, '2024-06-20 07:55:49', '2024-06-20 07:55:49', NULL),
-(19, 8, 13, 23, 1, NULL, 1, 1, '1:1', NULL, NULL, NULL, NULL, '1', NULL, '1', NULL, NULL, '2024-06-20 08:00:02', '2024-06-20 08:00:02', NULL),
-(20, 8, 13, 24, 2, NULL, 1, 30, '1', '1', '1', '1', NULL, NULL, '1', '1', '1', NULL, '2024-06-20 08:00:02', '2024-06-20 08:00:02', NULL),
-(21, 8, 13, 25, 6, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2024-06-20 08:00:02', '2024-06-20 08:00:02', NULL),
-(22, 8, 14, 26, 5, NULL, 1, 43, '1', '1', '1', '1', NULL, NULL, '1', '1', '1', NULL, '2024-06-20 08:00:02', '2024-06-20 08:00:02', NULL),
-(23, 8, 14, 27, 8, NULL, 1, 61, NULL, NULL, NULL, NULL, NULL, '1', '1', '1', '1', '2024-06-19', '2024-06-20 08:00:02', '2024-06-20 08:00:02', NULL),
-(24, 4, 19, 33, 1, NULL, 1, 2, '1:1', NULL, NULL, NULL, NULL, '1', NULL, '1', NULL, '2024-06-21', '2024-06-20 08:01:41', '2024-06-20 08:05:18', NULL),
-(25, 4, 20, 35, 5, NULL, 12, 44, '1', '1', '1', '1', NULL, NULL, '1', '1', '1', '2024-06-21', '2024-06-20 08:02:28', '2024-06-20 08:05:18', NULL),
-(26, 4, 20, 35, 5, NULL, 1, 44, '1', '1', '1', '1', NULL, NULL, '1', '1', '1', '2024-06-20', '2024-06-20 08:04:10', '2024-06-20 08:05:18', NULL);
 
 -- --------------------------------------------------------
 
@@ -250,19 +205,7 @@ CREATE TABLE `campaign` (
 --
 
 INSERT INTO `campaign` (`id`, `client_id`, `campaign_name`, `project_code`, `image`, `export_name`, `budget`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, '1', 'TEST', 'TEST1', NULL, '', 1200, '2024-06-10 06:35:28', '2024-06-10 06:35:28', NULL),
-(2, '1', 'ggggg', 'ggg', NULL, '', 2134, '2024-06-10 06:37:42', '2024-06-10 06:37:42', NULL),
-(3, '1', 'ddd', '2323', NULL, '', 234323, '2024-06-10 06:39:49', '2024-06-10 06:39:49', NULL),
-(4, '1', 'test 1', 'test1', NULL, '', 100000, '2024-06-10 06:49:20', '2024-06-10 06:49:20', NULL),
-(5, '1', 'Tyson - June 11 Test1', NULL, NULL, '', NULL, '2024-06-11 12:21:53', '2024-06-11 12:21:53', NULL),
-(6, '1', 'Tyson - June 12 Test1', 'ABC-0001', NULL, '', 10000, '2024-06-12 06:29:14', '2024-06-12 06:29:14', NULL),
-(7, '1', 'Tyson - June 15 Test1', NULL, NULL, '', NULL, '2024-06-15 15:14:06', '2024-06-15 15:14:06', NULL),
-(8, '1', 'Test 5-17', NULL, NULL, '', NULL, '2024-06-17 06:27:54', '2024-06-17 06:27:54', NULL),
-(9, '1', 'Tyson - June 17 Test1', 'ABC-0001', NULL, '', 10000, '2024-06-17 11:29:45', '2024-06-17 11:29:45', NULL),
-(10, '1', 'Tyson - June 17 Test2', NULL, NULL, '', NULL, '2024-06-17 12:15:48', '2024-06-17 12:15:48', NULL),
-(11, '1', 'FATHER\'S DAY', 'FATHER-1024', NULL, '', 100000, '2024-06-19 07:50:51', '2024-06-19 07:50:51', NULL),
-(12, '2', 'FATHER\'S DAY', 'FATHER-1024', NULL, '', 100000, '2024-06-19 07:52:02', '2024-06-19 07:52:02', NULL),
-(13, '2', 'SSS', 'SSS123', NULL, '', 10000, '2024-06-20 06:47:29', '2024-06-20 06:47:29', NULL);
+(1, '1', 'TEST NEW', 'TEST_NEW', NULL, '', 10000, '2024-06-27 09:38:10', '2024-06-27 09:38:10', NULL);
 
 -- --------------------------------------------------------
 
@@ -284,21 +227,8 @@ CREATE TABLE `campaign_languages` (
 --
 
 INSERT INTO `campaign_languages` (`id`, `campaign_id`, `language`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 1, 'EN', '2024-06-10 06:35:28', '2024-06-10 06:35:28', NULL),
-(2, 2, 'EN', '2024-06-10 06:37:42', '2024-06-10 06:37:42', NULL),
-(3, 2, 'FR', '2024-06-10 06:37:42', '2024-06-10 06:37:42', NULL),
-(4, 3, 'EN', '2024-06-10 06:39:49', '2024-06-10 06:39:49', NULL),
-(5, 3, 'FR', '2024-06-10 06:39:49', '2024-06-10 06:39:49', NULL),
-(6, 4, 'EN', '2024-06-10 06:49:20', '2024-06-10 06:49:20', NULL),
-(7, 5, 'EN', '2024-06-11 12:21:53', '2024-06-11 12:21:53', NULL),
-(8, 6, 'EN', '2024-06-12 06:29:14', '2024-06-12 06:29:14', NULL),
-(9, 7, 'EN', '2024-06-15 15:14:06', '2024-06-15 15:14:06', NULL),
-(10, 8, 'FR', '2024-06-17 06:27:54', '2024-06-17 06:27:54', NULL),
-(11, 9, 'EN', '2024-06-17 11:29:45', '2024-06-17 11:29:45', NULL),
-(12, 10, 'EN', '2024-06-17 12:15:48', '2024-06-17 12:15:48', NULL),
-(13, 11, 'EN', '2024-06-19 07:50:51', '2024-06-19 07:50:51', NULL),
-(14, 12, 'EN', '2024-06-19 07:52:02', '2024-06-19 07:52:02', NULL),
-(15, 13, 'EN', '2024-06-20 06:47:29', '2024-06-20 06:47:29', NULL);
+(1, 1, 'EN', '2024-06-27 09:38:10', '2024-06-27 09:38:10', NULL),
+(2, 1, 'FR', '2024-06-27 09:38:10', '2024-06-27 09:38:10', NULL);
 
 -- --------------------------------------------------------
 
@@ -320,23 +250,7 @@ CREATE TABLE `campaign_member` (
 --
 
 INSERT INTO `campaign_member` (`id`, `campaign_id`, `user_id`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 1, '1', '2024-06-10 06:35:28', '2024-06-10 06:35:28', NULL),
-(2, 1, '2', '2024-06-10 06:35:28', '2024-06-10 06:35:28', NULL),
-(3, 2, '1', '2024-06-10 06:37:42', '2024-06-10 06:37:42', NULL),
-(4, 2, '2', '2024-06-10 06:37:42', '2024-06-10 06:37:42', NULL),
-(5, 3, '1', '2024-06-10 06:39:49', '2024-06-10 06:39:49', NULL),
-(6, 3, '3', '2024-06-10 06:39:49', '2024-06-10 06:39:49', NULL),
-(7, 4, '2', '2024-06-10 06:49:20', '2024-06-10 06:49:20', NULL),
-(8, 5, '1', '2024-06-11 12:21:53', '2024-06-11 12:21:53', NULL),
-(9, 6, '3', '2024-06-12 06:29:14', '2024-06-12 06:29:14', NULL),
-(10, 7, '1', '2024-06-15 15:14:06', '2024-06-15 15:14:06', NULL),
-(11, 8, '1', '2024-06-17 06:27:54', '2024-06-17 06:27:54', NULL),
-(12, 9, '1', '2024-06-17 11:29:45', '2024-06-17 11:29:45', NULL),
-(13, 10, '1', '2024-06-17 12:15:48', '2024-06-17 12:15:48', NULL),
-(14, 11, '2', '2024-06-19 07:50:51', '2024-06-19 07:50:51', NULL),
-(15, 12, '2', '2024-06-19 07:52:02', '2024-06-19 07:52:02', NULL),
-(16, 13, '1', '2024-06-20 06:47:29', '2024-06-20 06:47:29', NULL),
-(17, 13, '2', '2024-06-20 06:47:29', '2024-06-20 06:47:29', NULL);
+(1, 1, '7', '2024-06-27 09:38:10', '2024-06-27 09:38:10', NULL);
 
 -- --------------------------------------------------------
 
@@ -359,8 +273,8 @@ CREATE TABLE `category_master` (
 INSERT INTO `category_master` (`id`, `name`, `created_at`, `updated_at`, `deleted_at`) VALUES
 (1, 'Social', '2024-05-10 01:37:17', '2024-05-10 01:37:17', NULL),
 (2, 'Print', '2024-05-10 02:47:51', '2024-05-10 02:47:51', NULL),
-(3, 'Radio', '2024-05-10 02:48:12', '2024-05-10 02:48:12', NULL),
-(4, 'Television', '2024-05-10 02:48:19', '2024-05-10 02:48:19', NULL),
+(3, 'Radio', '2024-05-10 02:48:12', '2024-05-10 02:48:12', '2024-06-19 11:42:08'),
+(4, 'Television', '2024-05-10 02:48:19', '2024-05-10 02:48:19', '2024-06-26 18:30:00'),
 (5, 'Outdoor', '2024-05-10 02:48:27', '2024-05-10 02:48:27', NULL),
 (6, 'Display', '2024-05-10 02:48:35', '2024-05-10 02:48:35', NULL),
 (7, 'Podcast', '2024-05-10 02:48:43', '2024-05-10 02:48:43', NULL),
@@ -438,28 +352,7 @@ CREATE TABLE `flight` (
 --
 
 INSERT INTO `flight` (`id`, `campaign_id`, `flight_count`, `in_market_start_date`, `in_market_end_date`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 17, 1, '2024-06-01', '2024-06-10', '2024-06-10 06:35:14', '2024-06-10 06:35:14', NULL),
-(2, 1, 1, '2024-06-05', '2024-06-23', '2024-06-10 06:35:49', '2024-06-10 06:36:34', '2024-06-10 06:36:34'),
-(3, 1, 1, '2024-06-07', '2024-06-22', '2024-06-10 06:36:42', '2024-06-10 06:36:42', NULL),
-(4, 2, 1, '2024-06-01', '2024-06-11', '2024-06-10 06:38:04', '2024-06-10 06:38:04', NULL),
-(5, 3, 1, '2024-06-01', '2024-06-20', '2024-06-10 06:40:54', '2024-06-10 06:40:54', NULL),
-(6, 3, 2, '2024-06-01', '2024-06-19', '2024-06-10 06:40:54', '2024-06-10 06:40:54', NULL),
-(7, 4, 1, '2024-06-01', '2024-06-11', '2024-06-10 06:49:46', '2024-06-10 06:51:14', '2024-06-10 06:51:14'),
-(8, 5, 1, '2024-06-06', '2024-06-29', '2024-06-11 12:22:16', '2024-06-11 12:22:16', NULL),
-(9, 6, 1, '2024-06-01', '2024-06-30', '2024-06-12 06:29:51', '2024-06-12 06:30:32', NULL),
-(10, 6, 1, '2024-06-01', '2024-06-30', '2024-06-12 06:30:12', '2024-06-12 06:30:28', '2024-06-12 06:30:28'),
-(11, 7, 1, '2024-06-15', '2024-06-30', '2024-06-15 15:14:25', '2024-06-15 15:15:21', NULL),
-(12, 7, 2, '2024-06-15', '2024-06-30', '2024-06-15 15:15:21', '2024-06-15 15:15:21', NULL),
-(13, 8, 1, '2024-06-17', '2024-06-18', '2024-06-17 06:30:07', '2024-06-17 06:30:07', NULL),
-(14, 8, 2, '2024-06-18', '2024-06-19', '2024-06-17 06:30:07', '2024-06-17 06:30:07', NULL),
-(15, 9, 1, '2024-06-01', '2024-06-30', '2024-06-17 11:30:55', '2024-06-17 11:30:55', NULL),
-(16, 10, 1, '2024-06-17', '2024-06-30', '2024-06-17 12:16:33', '2024-06-17 12:16:33', NULL),
-(19, 4, 1, '2024-06-19', '2024-06-29', '2024-06-19 05:43:13', '2024-06-19 07:23:09', NULL),
-(20, 4, 2, '2024-06-20', '2024-06-30', '2024-06-19 05:43:13', '2024-06-19 07:23:09', NULL),
-(21, 11, 1, '2024-06-20', '2024-06-21', '2024-06-19 07:51:26', '2024-06-19 07:51:26', NULL),
-(22, 11, 1, '2024-06-20', '2024-06-21', '2024-06-19 07:51:48', '2024-06-19 07:51:48', NULL),
-(23, 12, 1, '2024-06-20', '2024-06-21', '2024-06-19 07:52:24', '2024-06-19 07:52:24', NULL),
-(24, 13, 1, '2024-06-18', '2024-06-12', '2024-06-20 06:47:43', '2024-06-20 06:47:43', NULL);
+(1, 1, 1, '2024-06-27', '2024-06-30', '2024-06-27 09:38:24', '2024-06-27 09:38:24', NULL);
 
 -- --------------------------------------------------------
 
@@ -487,54 +380,27 @@ CREATE TABLE `flight_connection` (
 --
 
 INSERT INTO `flight_connection` (`id`, `campaign_id`, `flight_id`, `language`, `type`, `location`, `category_id`, `ad_type`, `tag`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 17, 1, 'EN', 'Awareness', 'rrrr', 1, NULL, 'F1', '2024-06-10 06:35:14', '2024-06-10 06:35:14', NULL),
-(2, 17, 1, 'EN', 'Awareness', 'rrrr', 2, NULL, 'F1', '2024-06-10 06:35:14', '2024-06-10 06:35:14', NULL),
-(3, 1, 2, 'EN', 'Awareness', 'test1', 2, NULL, 'F1', '2024-06-10 06:35:49', '2024-06-10 06:36:34', '2024-06-10 06:36:34'),
-(4, 1, 2, 'EN', 'Awareness', 'test1', 3, NULL, 'F1', '2024-06-10 06:35:49', '2024-06-10 06:36:34', '2024-06-10 06:36:34'),
-(5, 1, 3, 'EN', 'Awareness', 'test1', 1, NULL, 'F1', '2024-06-10 06:36:42', '2024-06-10 06:36:42', NULL),
-(6, 2, 4, 'EN', 'Awareness', 'ffff', 1, NULL, 'F1', '2024-06-10 06:38:04', '2024-06-10 06:38:04', NULL),
-(7, 2, 4, 'EN', 'Awareness', 'ffff', 2, NULL, 'F1', '2024-06-10 06:38:04', '2024-06-10 06:38:04', NULL),
-(8, 3, 5, 'EN', 'Awareness', 'sdsd', 1, NULL, 'F1', '2024-06-10 06:40:54', '2024-06-10 06:40:54', NULL),
-(9, 3, 5, 'EN', 'Awareness', 'sdsd', 2, NULL, 'F1', '2024-06-10 06:40:54', '2024-06-10 06:40:54', NULL),
-(10, 3, 5, 'EN', 'Awareness', 'ggg', 2, NULL, 'F2', '2024-06-10 06:40:54', '2024-06-10 06:40:54', NULL),
-(11, 3, 5, 'EN', 'Awareness', 'ggg', 3, NULL, 'F2', '2024-06-10 06:40:54', '2024-06-10 06:40:54', NULL),
-(12, 3, 6, 'EN', 'Awareness', 'rrrr', 4, NULL, 'F3', '2024-06-10 06:40:54', '2024-06-10 06:40:54', NULL),
-(13, 3, 6, 'EN', 'Awareness', 'rrrr', 5, NULL, 'F3', '2024-06-10 06:40:54', '2024-06-10 06:40:54', NULL),
-(14, 4, 7, 'EN', 'Awareness', 'nova', 1, NULL, 'F1', '2024-06-10 06:49:46', '2024-06-10 06:51:14', '2024-06-10 06:51:14'),
-(15, 5, 8, 'EN', 'Awareness', 'NS', 1, NULL, 'F1', '2024-06-11 12:22:16', '2024-06-11 12:22:16', NULL),
-(16, 6, 9, 'EN', 'Awareness', 'NS', 1, NULL, 'F1', '2024-06-12 06:29:51', '2024-06-12 06:30:32', NULL),
-(17, 6, 9, 'EN', 'Awareness', 'NB', 1, NULL, 'F2', '2024-06-12 06:29:51', '2024-06-12 06:30:32', NULL),
-(18, 6, 10, 'EN', 'Awareness', 'NS', 1, NULL, 'F1', '2024-06-12 06:30:12', '2024-06-12 06:30:28', '2024-06-12 06:30:28'),
-(19, 6, 10, 'EN', 'Awareness', 'NB', 1, NULL, 'F2', '2024-06-12 06:30:12', '2024-06-12 06:30:28', '2024-06-12 06:30:28'),
-(20, 7, 11, 'EN', 'Awareness', 'NS', 1, NULL, 'F1', '2024-06-15 15:14:25', '2024-06-15 15:15:21', NULL),
-(21, 7, 11, 'EN', 'Awareness', 'NB', 2, NULL, NULL, '2024-06-15 15:15:21', '2024-06-15 15:15:21', NULL),
-(22, 7, 12, 'EN', 'Consideration', 'Test', 3, NULL, NULL, '2024-06-15 15:15:21', '2024-06-15 15:15:21', NULL),
-(23, 8, 13, 'EN', 'Awareness', 'NS', 1, NULL, 'F1', '2024-06-17 06:30:07', '2024-06-17 06:30:07', NULL),
-(24, 8, 13, 'EN', 'Awareness', 'NS', 2, NULL, 'F1', '2024-06-17 06:30:07', '2024-06-17 06:30:07', NULL),
-(25, 8, 13, 'EN', 'Awareness', 'NB', 6, NULL, 'F2', '2024-06-17 06:30:07', '2024-06-17 06:30:07', NULL),
-(26, 8, 14, 'FR', 'Consideration', 'NS', 5, NULL, 'F3', '2024-06-17 06:30:07', '2024-06-17 06:30:07', NULL),
-(27, 8, 14, 'FR', 'Consideration', 'NS', 8, NULL, 'F3', '2024-06-17 06:30:07', '2024-06-17 06:30:07', NULL),
-(28, 9, 15, 'EN', 'Awareness', 'NS', 1, NULL, 'F1', '2024-06-17 11:30:55', '2024-06-17 11:30:55', NULL),
-(29, 10, 16, 'EN', 'Awareness', 'NS', 1, NULL, 'F1', '2024-06-17 12:16:33', '2024-06-17 12:16:33', NULL),
-(30, 10, 16, 'EN', 'Awareness', 'NB', 2, NULL, 'F2', '2024-06-17 12:16:33', '2024-06-17 12:16:33', NULL),
-(31, 4, 17, 'EN', 'Awareness', 'Flight 1.1', 1, NULL, 'F1', '2024-06-19 05:42:53', '2024-06-19 05:42:53', NULL),
-(32, 4, 17, 'EN', 'Awareness', 'Flight 1.1', 2, NULL, 'F1', '2024-06-19 05:42:53', '2024-06-19 05:42:53', NULL),
-(33, 4, 19, 'EN', 'Awareness', 'Flight 1.1', 1, NULL, 'F1', '2024-06-19 05:43:13', '2024-06-19 07:23:09', NULL),
-(34, 4, 19, 'EN', 'Awareness', 'Flight 1.1', 2, NULL, 'F1', '2024-06-19 05:43:13', '2024-06-19 07:23:09', NULL),
-(35, 4, 20, 'EN', 'Awareness', 'Flight 2.1', 5, NULL, 'F2', '2024-06-19 05:43:13', '2024-06-19 07:23:09', NULL),
-(36, 4, 20, 'EN', 'Awareness', 'Flight 2.1', 6, NULL, 'F2', '2024-06-19 05:43:13', '2024-06-19 07:23:09', NULL),
-(37, 4, 20, 'EN', 'Awareness', 'FL', 2, NULL, NULL, '2024-06-19 07:23:09', '2024-06-19 07:23:09', NULL),
-(38, 11, 21, 'EN', 'Awareness', 'Flight 1.1', 2, NULL, 'F1', '2024-06-19 07:51:26', '2024-06-19 07:51:26', NULL),
-(39, 11, 21, 'EN', 'Awareness', 'Flight 1.1', 3, NULL, 'F1', '2024-06-19 07:51:26', '2024-06-19 07:51:26', NULL),
-(40, 11, 22, 'EN', 'Awareness', 'Flight 1.1', 2, NULL, 'F1', '2024-06-19 07:51:48', '2024-06-19 07:51:48', NULL),
-(41, 11, 22, 'EN', 'Awareness', 'Flight 1.1', 3, NULL, 'F1', '2024-06-19 07:51:48', '2024-06-19 07:51:48', NULL),
-(42, 11, 22, 'EN', 'Awareness', 'Flight 1.2', 4, NULL, 'F2', '2024-06-19 07:51:48', '2024-06-19 07:51:48', NULL),
-(43, 11, 22, 'EN', 'Awareness', 'Flight 1.2', 5, NULL, 'F2', '2024-06-19 07:51:48', '2024-06-19 07:51:48', NULL),
-(44, 12, 23, 'EN', 'Awareness', 'Flight 1.1', 1, NULL, 'F1', '2024-06-19 07:52:24', '2024-06-19 07:52:24', NULL),
-(45, 12, 23, 'EN', 'Awareness', 'Flight 1.1', 2, NULL, 'F1', '2024-06-19 07:52:24', '2024-06-19 07:52:24', NULL),
-(46, 12, 23, 'EN', 'Consideration', '1', 4, NULL, 'F2', '2024-06-19 07:52:24', '2024-06-19 07:52:24', NULL),
-(47, 12, 23, 'EN', 'Consideration', '1', 5, NULL, 'F2', '2024-06-19 07:52:24', '2024-06-19 07:52:24', NULL),
-(48, 13, 24, 'EN', 'Awareness', 'TEST1', 1, NULL, 'F1', '2024-06-20 06:47:43', '2024-06-20 06:47:43', NULL);
+(1, 1, 1, 'EN', 'Awareness', 'TEST NEW 1', 1, NULL, 'F_1_1', '2024-06-27 09:38:24', '2024-06-27 09:38:24', NULL),
+(2, 1, 1, 'EN', 'Awareness', 'TEST NEW 1', 2, NULL, 'F_1_1', '2024-06-27 09:38:24', '2024-06-27 09:38:24', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `notification`
+--
+
+CREATE TABLE `notification` (
+  `id` int(11) NOT NULL,
+  `campaign_id` int(11) DEFAULT NULL,
+  `flight_id` int(11) DEFAULT NULL,
+  `assets_id` int(11) DEFAULT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `status_from` varchar(255) DEFAULT NULL,
+  `status_to` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -706,9 +572,9 @@ ALTER TABLE `advertisement_type`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `assets`
+-- Indexes for table `assets_change_log`
 --
-ALTER TABLE `assets`
+ALTER TABLE `assets_change_log`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -772,6 +638,12 @@ ALTER TABLE `flight_connection`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `notification`
+--
+ALTER TABLE `notification`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `publisher_master`
 --
 ALTER TABLE `publisher_master`
@@ -812,9 +684,9 @@ ALTER TABLE `advertisement_type`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
--- AUTO_INCREMENT for table `assets`
+-- AUTO_INCREMENT for table `assets_change_log`
 --
-ALTER TABLE `assets`
+ALTER TABLE `assets_change_log`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -827,25 +699,25 @@ ALTER TABLE `assets_parameters`
 -- AUTO_INCREMENT for table `asset_setup`
 --
 ALTER TABLE `asset_setup`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `campaign`
 --
 ALTER TABLE `campaign`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `campaign_languages`
 --
 ALTER TABLE `campaign_languages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `campaign_member`
 --
 ALTER TABLE `campaign_member`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `category_master`
@@ -869,13 +741,19 @@ ALTER TABLE `company_address`
 -- AUTO_INCREMENT for table `flight`
 --
 ALTER TABLE `flight`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `flight_connection`
 --
 ALTER TABLE `flight_connection`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `notification`
+--
+ALTER TABLE `notification`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `publisher_master`

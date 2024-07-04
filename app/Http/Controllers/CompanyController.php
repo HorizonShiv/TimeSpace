@@ -10,7 +10,7 @@ class CompanyController extends Controller
 {
     public function index()
     {
-        return view('account-settings');
+        return view('account.settings');
     }
 
     /**
@@ -18,7 +18,7 @@ class CompanyController extends Controller
      */
     public function create()
     {
-        return view('add-company');
+        return view('company.add');
     }
 
     public function store(Request $request)

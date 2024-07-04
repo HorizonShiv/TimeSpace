@@ -15,7 +15,9 @@ class AsstesChangeLog extends Model
         'user_id',
         'date',
         'type',
+        'remarks',
         'time',
+        
     ];
 
     public function AssetParameters()

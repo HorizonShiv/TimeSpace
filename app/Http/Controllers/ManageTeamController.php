@@ -21,7 +21,7 @@ class ManageTeamController extends Controller
      */
     public function create()
     {
-        return view('manage-people');
+        return view('team.manage-people');
     }
 
     /**

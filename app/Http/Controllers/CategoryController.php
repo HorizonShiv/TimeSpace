@@ -17,10 +17,10 @@ class CategoryController extends Controller
         // $Categories = CategoryMaster::all();
         // $Publishers = PublisherMaster::all();
         // $AdvertisementTypes = AdvertisementType::all();
-        // return view('category', compact("Categories"));
+
 
         // dd($Categories->toArray());
-        return view('category', compact("Categories"));
+        return view('category.index', compact("Categories"));
     }
 
     public function getCategoryName(Request $request)

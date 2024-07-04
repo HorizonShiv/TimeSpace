@@ -19,6 +19,8 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+    @yield('addStyleScript')
+
     <title>Campagin Dashboard</title>
     <style>
         #draft[data-astro-cid-lhxslpwo] {
@@ -132,6 +134,21 @@
             max-width: 200px;
             max-height: 200px;
         }
+
+
+        .activeBtn {
+            background-color: #C72BA4 !important;
+            color: white !important;
+        }
+
+        .activeBtn:hover {
+            color: white;
+        }
+
+        label {
+            text-decoration: none;
+            color: #000;
+        }   
     </style>
     <script type="module"></script>
     <script type="module" crossorigin src="/assets/index-QCt-Udj2.js"></script>
@@ -156,3 +173,5 @@
             <h2 class="text-[#FFFFFF] text-[25px] font-bold" style="margin-left: 20px">MediaBridge</h2>
         </div>
     </nav>
+
+

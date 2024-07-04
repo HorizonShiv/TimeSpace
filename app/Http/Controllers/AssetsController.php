@@ -32,7 +32,7 @@ class AssetsController extends Controller
     {
         // dd($request->toArray());
         $CampaignData = Campaign::with("Flight", "FlightConnection")->where('id', $request->campaign)->get();
-        return view('assets-setup', compact('CampaignData'));
+        return view('asset.add', compact('CampaignData'));
     }
 
     /**
@@ -44,6 +44,7 @@ class AssetsController extends Controller
         $Campaigns = Campaign::with("Flight.FlightConnection")->where('id', $request->CampaignId)->first();
         $id = $request->CampaignId;
 
+        // dd($Campaigns);
         $oldId = 0;
         foreach ($Campaigns->Flight as $Flights) {
             $FlightId = $Flights->id;
@@ -57,6 +58,7 @@ class AssetsController extends Controller
                 // $CategroryId = $Connection->AdvertisementType->category_master_id;
                 foreach ($request->AdPublisher[$FlightId][$ConnectionId][$lang][$type][$AdtypeId] as $indexKey => $data) {
 
+                    // dd($request->AdType);
                     $Assets = new Assets([
                         'campaign_id' => $request->CampaignId,
                         'flight_id' => $FlightId,
@@ -102,7 +104,7 @@ class AssetsController extends Controller
             }
         }
 
-        // return view('campaign-details', compact('Campaigns', 'id', 'success'));
+        // return view('campaign.dashboard', compact('Campaigns', 'id', 'success'));
         // return redirect()->action([TeamController::class, 'managePeople'], compact('success'));
         return redirect()->route('campaign-show', ['id' => $id, 'success' => $success]);
     }
@@ -129,254 +131,258 @@ class AssetsController extends Controller
         $OldId = '0';
         $temp = 0;
         foreach ($CampaignData->Flight as $Flights) {
-            foreach ($Flights->FlightConnection as $Connection) {
-                $AdvertisementType = AdvertisementType::where('category_master_id', $Connection->category_id)->get();
-                // dd($AdvertisementType->toArray());
-                $tags[$Flights->id][$Connection->language][$Connection->type][$Connection->tag][] = $Connection->CategoryMaster->name . '_' . $Connection->CategoryMaster->id;
+            $FlightConnectionData = $Flights->FlightConnection->groupBy('tag');
+            foreach ($FlightConnectionData as $flightsConnections) {
+                foreach ($flightsConnections as $Connection) {
+                    $AdvertisementType = AdvertisementType::where('category_master_id', $Connection->category_id)->get();
 
-                if (strtolower($Connection->CategoryMaster->name) == 'social') {
+                    $tags[$Flights->id][$Connection->language][$Connection->type][$Connection->tag][] = $Connection->CategoryMaster->name . '_' . $Connection->CategoryMaster->id;
 
-                    $CategoryName = 'social';
+                    if (strtolower($Connection->CategoryMaster->name) == 'social') {
 
-                    $PublisherMaster = PublisherMaster::where('category_id', $Connection->category_id)->get();
-                    $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
-                    // $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
-                    $htmlField .= '<select id="publisher_' . $Connection->id . '" onchange="getPublisherAdType(' . $Connection->id . ')" class="select select-primary w-32 rounded-md" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
-                    foreach ($PublisherMaster as $Publisher) {
-                        $htmlField .= '<option value="' . $Publisher->id . '">' . $Publisher->name . '</option>';
+                        $CategoryName = 'social';
+
+                        $PublisherMaster = PublisherMaster::where('category_id', $Connection->category_id)->get();
+                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
+                        // $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
+                        $htmlField .= '<select id="publisher_' . $Connection->CategoryMaster->id . '_' . $temp . '" onchange="getPublisherAdType(' . $Connection->CategoryMaster->id . ',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
+                        $htmlField .= '<option selected disabled>Select Publisher</option>';
+                        foreach ($PublisherMaster as $Publisher) {
+                            $htmlField .= '<option value="' . $Publisher->id . '">' . $Publisher->name . '</option>';
+                        }
+                        $htmlField .= '</select>';
+
+                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Type</p>';
+                        $htmlField .= '<select id="AdType_' . $temp . '" onchange="getInputFields(' . $Flights->id . ',' . $Connection->id . ',\'' . $Connection->language . '\',\'' . $Connection->type . '\',' . $Connection->CategoryMaster->id . ',\'' . $Connection->CategoryMaster->name . '\',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdType[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
+                        $htmlField .= '<option disabled selected data-astro-cid-jf5gi763>Select Adverstiment Type</option>';
+                        foreach ($AdvertisementType as $Ads) {
+                            $htmlField .= '<option value="' . $Ads->id . '">' . $Ads->name . '</option>';
+                        }
+                        $htmlField .= '</select>';
+
+
+                        $htmlData .= '<input type="date" value="" name="AdDate[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-[165px]" placeholder="MM/DD/YYYY" data-astro-cid-b7mymyte id="DueToPublisher" />';
+
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlData'] = $htmlData;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['categoryName'] = $CategoryName;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlFieldName'] = $htmlFieldName;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlField'] = $htmlField;
+                        $htmlFieldName = "";
+                        $htmlField = "";
+                        $htmlData = "";
+                        $CategoryName = "";
+                        $temp++;
                     }
-                    $htmlField .= '</select>';
+                    if (strtolower($Connection->CategoryMaster->name) == 'print') {
+                        $CategoryName = 'print';
+                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
+                        $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
 
-                    $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Type</p>';
-                    $htmlField .= '<select id="AdType_' . $temp . '" onchange="getInputFields(' . $Flights->id . ',' . $Connection->id . ',\'' . $Connection->language . '\',\'' . $Connection->type . '\',' . $Connection->CategoryMaster->id . ',\'' . $Connection->CategoryMaster->name . '\',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdType[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
-                    $htmlField .= '<option disabled selected data-astro-cid-jf5gi763>Select Adverstiment Type</option>';
-                    foreach ($AdvertisementType as $Ads) {
-                        $htmlField .= '<option value="' . $Ads->id . '">' . $Ads->name . '</option>';
+                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Type</p>';
+                        $htmlField .= '<select id="AdType_' . $temp . '" onchange="getInputFields(' . $Flights->id . ',' . $Connection->id . ',\'' . $Connection->language . '\',\'' . $Connection->type . '\',' . $Connection->CategoryMaster->id . ',\'' . $Connection->CategoryMaster->name . '\',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdType[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
+                        $htmlField .= '<option disabled selected data-astro-cid-jf5gi763>Select Adverstiment Type</option>';
+                        foreach ($AdvertisementType as $Ads) {
+                            $htmlField .= '<option value="' . $Ads->id . '">' . $Ads->name . '</option>';
+                        }
+                        $htmlField .= '</select>';
+
+                        $htmlData .= '<input type="date" value="" name="AdDate[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-[165px]" placeholder="MM/DD/YYYY" data-astro-cid-b7mymyte id="DueToPublisher" />';
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlData'] = $htmlData;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['categoryName'] = $CategoryName;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlFieldName'] = $htmlFieldName;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlField'] = $htmlField;
+                        $htmlFieldName = "";
+                        $htmlField = "";
+                        $htmlData = "";
+                        $CategoryName = "";
+                        $temp++;
                     }
-                    $htmlField .= '</select>';
 
+                    if (strtolower($Connection->CategoryMaster->name) == 'radio') {
+                        $CategoryName = 'radio';
 
-                    $htmlData .= '<input type="date" value="" name="AdDate[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-[165px]" placeholder="MM/DD/YYYY" data-astro-cid-b7mymyte id="DueToPublisher" />';
+                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
+                        $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
 
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlData'] = $htmlData;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['categoryName'] = $CategoryName;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlFieldName'] = $htmlFieldName;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlField'] = $htmlField;
-                    $htmlFieldName = "";
-                    $htmlField = "";
-                    $htmlData = "";
-                    $CategoryName = "";
-                    $temp++;
-                }
-                if (strtolower($Connection->CategoryMaster->name) == 'print') {
-                    $CategoryName = 'print';
-                    $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
-                    $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
+                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Type</p>';
+                        $htmlField .= '<select id="AdType_' . $temp . '" onchange="getInputFields(' . $Flights->id . ',' . $Connection->id . ',\'' . $Connection->language . '\',\'' . $Connection->type . '\',' . $Connection->CategoryMaster->id . ',\'' . $Connection->CategoryMaster->name . '\',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdType[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
+                        $htmlField .= '<option disabled selected data-astro-cid-jf5gi763>Select Adverstiment Type</option>';
+                        foreach ($AdvertisementType as $Ads) {
+                            $htmlField .= '<option value="' . $Ads->id . '">' . $Ads->name . '</option>';
+                        }
+                        $htmlField .= '</select>';
 
-                    $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Type</p>';
-                    $htmlField .= '<select id="AdType_' . $temp . '" onchange="getInputFields(' . $Flights->id . ',' . $Connection->id . ',\'' . $Connection->language . '\',\'' . $Connection->type . '\',' . $Connection->CategoryMaster->id . ',\'' . $Connection->CategoryMaster->name . '\',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdType[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
-                    $htmlField .= '<option disabled selected data-astro-cid-jf5gi763>Select Adverstiment Type</option>';
-                    foreach ($AdvertisementType as $Ads) {
-                        $htmlField .= '<option value="' . $Ads->id . '">' . $Ads->name . '</option>';
+                        $htmlData .= '<input type="date" value="" name="AdDate[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-[165px]" placeholder="MM/DD/YYYY" data-astro-cid-b7mymyte id="DueToPublisher" />';
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlData'] = $htmlData;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['categoryName'] = $CategoryName;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlFieldName'] = $htmlFieldName;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlField'] = $htmlField;
+                        $htmlFieldName = "";
+                        $htmlField = "";
+                        $htmlData = "";
+                        $CategoryName = "";
+                        $temp++;
                     }
-                    $htmlField .= '</select>';
 
-                    $htmlData .= '<input type="date" value="" name="AdDate[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-[165px]" placeholder="MM/DD/YYYY" data-astro-cid-b7mymyte id="DueToPublisher" />';
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlData'] = $htmlData;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['categoryName'] = $CategoryName;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlFieldName'] = $htmlFieldName;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlField'] = $htmlField;
-                    $htmlFieldName = "";
-                    $htmlField = "";
-                    $htmlData = "";
-                    $CategoryName = "";
-                    $temp++;
-                }
+                    if (strtolower($Connection->CategoryMaster->name) == 'television') {
+                        $CategoryName = 'television';
 
-                if (strtolower($Connection->CategoryMaster->name) == 'radio') {
-                    $CategoryName = 'radio';
+                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
+                        $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
 
-                    $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
-                    $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
+                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Type</p>';
+                        $htmlField .= '<select id="AdType_' . $temp . '" onchange="getInputFields(' . $Flights->id . ',' . $Connection->id . ',\'' . $Connection->language . '\',\'' . $Connection->type . '\',' . $Connection->CategoryMaster->id . ',\'' . $Connection->CategoryMaster->name . '\',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdType[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
+                        $htmlField .= '<option disabled selected data-astro-cid-jf5gi763>Select Adverstiment Type</option>';
+                        foreach ($AdvertisementType as $Ads) {
+                            $htmlField .= '<option value="' . $Ads->id . '">' . $Ads->name . '</option>';
+                        }
+                        $htmlField .= '</select>';
 
-                    $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Type</p>';
-                    $htmlField .= '<select id="AdType_' . $temp . '" onchange="getInputFields(' . $Flights->id . ',' . $Connection->id . ',\'' . $Connection->language . '\',\'' . $Connection->type . '\',' . $Connection->CategoryMaster->id . ',\'' . $Connection->CategoryMaster->name . '\',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdType[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
-                    $htmlField .= '<option disabled selected data-astro-cid-jf5gi763>Select Adverstiment Type</option>';
-                    foreach ($AdvertisementType as $Ads) {
-                        $htmlField .= '<option value="' . $Ads->id . '">' . $Ads->name . '</option>';
+                        $htmlData .= '<input type="date" value="" name="AdDate[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-[165px]" placeholder="MM/DD/YYYY" data-astro-cid-b7mymyte id="DueToPublisher" />';
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlData'] = $htmlData;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['categoryName'] = $CategoryName;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlFieldName'] = $htmlFieldName;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlField'] = $htmlField;
+                        $htmlFieldName = "";
+                        $htmlField = "";
+                        $htmlData = "";
+                        $CategoryName = "";
+                        $temp++;
                     }
-                    $htmlField .= '</select>';
+                    if (strtolower($Connection->CategoryMaster->name) == 'broadcast') {
+                        $CategoryName = 'broadcast';
 
-                    $htmlData .= '<input type="date" value="" name="AdDate[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-[165px]" placeholder="MM/DD/YYYY" data-astro-cid-b7mymyte id="DueToPublisher" />';
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlData'] = $htmlData;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['categoryName'] = $CategoryName;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlFieldName'] = $htmlFieldName;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlField'] = $htmlField;
-                    $htmlFieldName = "";
-                    $htmlField = "";
-                    $htmlData = "";
-                    $CategoryName = "";
-                    $temp++;
-                }
+                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
+                        $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
 
-                if (strtolower($Connection->CategoryMaster->name) == 'television') {
-                    $CategoryName = 'television';
+                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Type</p>';
+                        $htmlField .= '<select id="AdType_' . $temp . '" onchange="getInputFields(' . $Flights->id . ',' . $Connection->id . ',\'' . $Connection->language . '\',\'' . $Connection->type . '\',' . $Connection->CategoryMaster->id . ',\'' . $Connection->CategoryMaster->name . '\',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdType[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
+                        $htmlField .= '<option disabled selected data-astro-cid-jf5gi763>Select Adverstiment Type</option>';
+                        foreach ($AdvertisementType as $Ads) {
+                            $htmlField .= '<option value="' . $Ads->id . '">' . $Ads->name . '</option>';
+                        }
+                        $htmlField .= '</select>';
 
-                    $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
-                    $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
-
-                    $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Type</p>';
-                    $htmlField .= '<select id="AdType_' . $temp . '" onchange="getInputFields(' . $Flights->id . ',' . $Connection->id . ',\'' . $Connection->language . '\',\'' . $Connection->type . '\',' . $Connection->CategoryMaster->id . ',\'' . $Connection->CategoryMaster->name . '\',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdType[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
-                    $htmlField .= '<option disabled selected data-astro-cid-jf5gi763>Select Adverstiment Type</option>';
-                    foreach ($AdvertisementType as $Ads) {
-                        $htmlField .= '<option value="' . $Ads->id . '">' . $Ads->name . '</option>';
+                        $htmlData .= '<input type="date" value="" name="AdDate[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-[165px]" placeholder="MM/DD/YYYY" data-astro-cid-b7mymyte id="DueToPublisher" />';
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlData'] = $htmlData;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['categoryName'] = $CategoryName;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlFieldName'] = $htmlFieldName;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlField'] = $htmlField;
+                        $htmlFieldName = "";
+                        $htmlField = "";
+                        $htmlData = "";
+                        $CategoryName = "";
+                        $temp++;
                     }
-                    $htmlField .= '</select>';
 
-                    $htmlData .= '<input type="date" value="" name="AdDate[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-[165px]" placeholder="MM/DD/YYYY" data-astro-cid-b7mymyte id="DueToPublisher" />';
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlData'] = $htmlData;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['categoryName'] = $CategoryName;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlFieldName'] = $htmlFieldName;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlField'] = $htmlField;
-                    $htmlFieldName = "";
-                    $htmlField = "";
-                    $htmlData = "";
-                    $CategoryName = "";
-                    $temp++;
-                }
-                if (strtolower($Connection->CategoryMaster->name) == 'broadcast') {
-                    $CategoryName = 'broadcast';
+                    if (strtolower($Connection->CategoryMaster->name) == 'outdoor') {
+                        $CategoryName = 'outdoor';
 
-                    $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
-                    $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
+                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
+                        $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
 
-                    $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Type</p>';
-                    $htmlField .= '<select id="AdType_' . $temp . '" onchange="getInputFields(' . $Flights->id . ',' . $Connection->id . ',\'' . $Connection->language . '\',\'' . $Connection->type . '\',' . $Connection->CategoryMaster->id . ',\'' . $Connection->CategoryMaster->name . '\',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdType[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
-                    $htmlField .= '<option disabled selected data-astro-cid-jf5gi763>Select Adverstiment Type</option>';
-                    foreach ($AdvertisementType as $Ads) {
-                        $htmlField .= '<option value="' . $Ads->id . '">' . $Ads->name . '</option>';
+                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Type</p>';
+                        $htmlField .= '<select id="AdType_' . $temp . '" onchange="getInputFields(' . $Flights->id . ',' . $Connection->id . ',\'' . $Connection->language . '\',\'' . $Connection->type . '\',' . $Connection->CategoryMaster->id . ',\'' . $Connection->CategoryMaster->name . '\',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdType[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
+                        $htmlField .= '<option disabled selected data-astro-cid-jf5gi763>Select Adverstiment Type</option>';
+                        foreach ($AdvertisementType as $Ads) {
+                            $htmlField .= '<option value="' . $Ads->id . '">' . $Ads->name . '</option>';
+                        }
+                        $htmlField .= '</select>';
+
+                        $htmlData .= '<input type="date" value="" name="AdDate[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-[165px]" placeholder="MM/DD/YYYY" data-astro-cid-b7mymyte id="DueToPublisher" />';
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlData'] = $htmlData;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['categoryName'] = $CategoryName;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlFieldName'] = $htmlFieldName;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlField'] = $htmlField;
+                        $htmlFieldName = "";
+                        $htmlField = "";
+                        $htmlData = "";
+                        $CategoryName = "";
+                        $temp++;
                     }
-                    $htmlField .= '</select>';
 
-                    $htmlData .= '<input type="date" value="" name="AdDate[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-[165px]" placeholder="MM/DD/YYYY" data-astro-cid-b7mymyte id="DueToPublisher" />';
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlData'] = $htmlData;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['categoryName'] = $CategoryName;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlFieldName'] = $htmlFieldName;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlField'] = $htmlField;
-                    $htmlFieldName = "";
-                    $htmlField = "";
-                    $htmlData = "";
-                    $CategoryName = "";
-                    $temp++;
-                }
+                    if (strtolower($Connection->CategoryMaster->name) == 'display') {
+                        $CategoryName = 'display';
 
-                if (strtolower($Connection->CategoryMaster->name) == 'outdoor') {
-                    $CategoryName = 'outdoor';
+                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
+                        $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
 
-                    $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
-                    $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
+                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Type</p>';
+                        $htmlField .= '<select id="AdType_' . $temp . '" onchange="getInputFields(' . $Flights->id . ',' . $Connection->id . ',\'' . $Connection->language . '\',\'' . $Connection->type . '\',' . $Connection->CategoryMaster->id . ',\'' . $Connection->CategoryMaster->name . '\',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdType[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
+                        $htmlField .= '<option disabled selected data-astro-cid-jf5gi763>Select Adverstiment Type</option>';
+                        foreach ($AdvertisementType as $Ads) {
+                            $htmlField .= '<option value="' . $Ads->id . '">' . $Ads->name . '</option>';
+                        }
+                        $htmlField .= '</select>';
 
-                    $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Type</p>';
-                    $htmlField .= '<select id="AdType_' . $temp . '" onchange="getInputFields(' . $Flights->id . ',' . $Connection->id . ',\'' . $Connection->language . '\',\'' . $Connection->type . '\',' . $Connection->CategoryMaster->id . ',\'' . $Connection->CategoryMaster->name . '\',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdType[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
-                    $htmlField .= '<option disabled selected data-astro-cid-jf5gi763>Select Adverstiment Type</option>';
-                    foreach ($AdvertisementType as $Ads) {
-                        $htmlField .= '<option value="' . $Ads->id . '">' . $Ads->name . '</option>';
+                        $htmlData .= '<input type="date" value="" name="AdDate[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-[165px]" placeholder="MM/DD/YYYY" data-astro-cid-b7mymyte id="DueToPublisher" />';
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlData'] = $htmlData;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['categoryName'] = $CategoryName;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlFieldName'] = $htmlFieldName;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlField'] = $htmlField;
+                        $htmlFieldName = "";
+                        $htmlField = "";
+                        $htmlData = "";
+                        $CategoryName = "";
+                        $temp++;
                     }
-                    $htmlField .= '</select>';
+                    if (strtolower($Connection->CategoryMaster->name) == 'podcast') {
+                        $CategoryName = 'podcast';
 
-                    $htmlData .= '<input type="date" value="" name="AdDate[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-[165px]" placeholder="MM/DD/YYYY" data-astro-cid-b7mymyte id="DueToPublisher" />';
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlData'] = $htmlData;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['categoryName'] = $CategoryName;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlFieldName'] = $htmlFieldName;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlField'] = $htmlField;
-                    $htmlFieldName = "";
-                    $htmlField = "";
-                    $htmlData = "";
-                    $CategoryName = "";
-                    $temp++;
-                }
+                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
+                        $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
 
-                if (strtolower($Connection->CategoryMaster->name) == 'display') {
-                    $CategoryName = 'display';
+                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Type</p>';
+                        $htmlField .= '<select id="AdType_' . $temp . '" onchange="getInputFields(' . $Flights->id . ',' . $Connection->id . ',\'' . $Connection->language . '\',\'' . $Connection->type . '\',' . $Connection->CategoryMaster->id . ',\'' . $Connection->CategoryMaster->name . '\',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdType[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
+                        $htmlField .= '<option disabled selected data-astro-cid-jf5gi763>Select Adverstiment Type</option>';
+                        foreach ($AdvertisementType as $Ads) {
+                            $htmlField .= '<option value="' . $Ads->id . '">' . $Ads->name . '</option>';
+                        }
+                        $htmlField .= '</select>';
 
-                    $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
-                    $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
-
-                    $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Type</p>';
-                    $htmlField .= '<select id="AdType_' . $temp . '" onchange="getInputFields(' . $Flights->id . ',' . $Connection->id . ',\'' . $Connection->language . '\',\'' . $Connection->type . '\',' . $Connection->CategoryMaster->id . ',\'' . $Connection->CategoryMaster->name . '\',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdType[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
-                    $htmlField .= '<option disabled selected data-astro-cid-jf5gi763>Select Adverstiment Type</option>';
-                    foreach ($AdvertisementType as $Ads) {
-                        $htmlField .= '<option value="' . $Ads->id . '">' . $Ads->name . '</option>';
+                        $htmlData .= '<input type="date" value="" name="AdDate[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-[165px]" placeholder="MM/DD/YYYY" data-astro-cid-b7mymyte id="DueToPublisher" />';
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlData'] = $htmlData;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['categoryName'] = $CategoryName;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlFieldName'] = $htmlFieldName;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlField'] = $htmlField;
+                        $htmlFieldName = "";
+                        $htmlField = "";
+                        $htmlData = "";
+                        $CategoryName = "";
+                        $temp++;
                     }
-                    $htmlField .= '</select>';
 
-                    $htmlData .= '<input type="date" value="" name="AdDate[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-[165px]" placeholder="MM/DD/YYYY" data-astro-cid-b7mymyte id="DueToPublisher" />';
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlData'] = $htmlData;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['categoryName'] = $CategoryName;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlFieldName'] = $htmlFieldName;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlField'] = $htmlField;
-                    $htmlFieldName = "";
-                    $htmlField = "";
-                    $htmlData = "";
-                    $CategoryName = "";
-                    $temp++;
-                }
-                if (strtolower($Connection->CategoryMaster->name) == 'podcast') {
-                    $CategoryName = 'podcast';
+                    if (strtolower($Connection->CategoryMaster->name) == 'influencer') {
+                        $CategoryName = 'influencer';
 
-                    $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
-                    $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
+                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
+                        $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
 
-                    $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Type</p>';
-                    $htmlField .= '<select id="AdType_' . $temp . '" onchange="getInputFields(' . $Flights->id . ',' . $Connection->id . ',\'' . $Connection->language . '\',\'' . $Connection->type . '\',' . $Connection->CategoryMaster->id . ',\'' . $Connection->CategoryMaster->name . '\',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdType[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
-                    $htmlField .= '<option disabled selected data-astro-cid-jf5gi763>Select Adverstiment Type</option>';
-                    foreach ($AdvertisementType as $Ads) {
-                        $htmlField .= '<option value="' . $Ads->id . '">' . $Ads->name . '</option>';
+                        $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Type</p>';
+                        $htmlField .= '<select id="AdType_' . $temp . '" onchange="getInputFields(' . $Flights->id . ',' . $Connection->id . ',\'' . $Connection->language . '\',\'' . $Connection->type . '\',' . $Connection->CategoryMaster->id . ',\'' . $Connection->CategoryMaster->name . '\',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdType[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
+                        $htmlField .= '<option disabled selected data-astro-cid-jf5gi763>Select Adverstiment Type</option>';
+                        foreach ($AdvertisementType as $Ads) {
+                            $htmlField .= '<option value="' . $Ads->id . '">' . $Ads->name . '</option>';
+                        }
+                        $htmlField .= '</select>';
+
+                        $htmlData .= '<input type="date" value="" name="AdDate[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-[165px]" placeholder="MM/DD/YYYY" data-astro-cid-b7mymyte id="DueToPublisher" />';
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlData'] = $htmlData;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['categoryName'] = $CategoryName;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlFieldName'] = $htmlFieldName;
+                        $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlField'] = $htmlField;
+                        $htmlFieldName = "";
+                        $htmlField = "";
+                        $htmlData = "";
+                        $CategoryName = "";
+                        $temp++;
                     }
-                    $htmlField .= '</select>';
-
-                    $htmlData .= '<input type="date" value="" name="AdDate[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-[165px]" placeholder="MM/DD/YYYY" data-astro-cid-b7mymyte id="DueToPublisher" />';
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlData'] = $htmlData;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['categoryName'] = $CategoryName;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlFieldName'] = $htmlFieldName;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlField'] = $htmlField;
-                    $htmlFieldName = "";
-                    $htmlField = "";
-                    $htmlData = "";
-                    $CategoryName = "";
-                    $temp++;
-                }
-
-                if (strtolower($Connection->CategoryMaster->name) == 'influencer') {
-                    $CategoryName = 'influencer';
-
-                    $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
-                    $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
-
-                    $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Type</p>';
-                    $htmlField .= '<select id="AdType_' . $temp . '" onchange="getInputFields(' . $Flights->id . ',' . $Connection->id . ',\'' . $Connection->language . '\',\'' . $Connection->type . '\',' . $Connection->CategoryMaster->id . ',\'' . $Connection->CategoryMaster->name . '\',' . $temp . ')" class="select select-primary w-32 rounded-md" name="AdType[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" >';
-                    $htmlField .= '<option disabled selected data-astro-cid-jf5gi763>Select Adverstiment Type</option>';
-                    foreach ($AdvertisementType as $Ads) {
-                        $htmlField .= '<option value="' . $Ads->id . '">' . $Ads->name . '</option>';
-                    }
-                    $htmlField .= '</select>';
-
-                    $htmlData .= '<input type="date" value="" name="AdDate[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-[165px]" placeholder="MM/DD/YYYY" data-astro-cid-b7mymyte id="DueToPublisher" />';
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlData'] = $htmlData;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['categoryName'] = $CategoryName;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlFieldName'] = $htmlFieldName;
-                    $html[$Flights->id][$Connection->id][$Connection->language][$Connection->type][$Connection->CategoryMaster->id]['htmlField'] = $htmlField;
-                    $htmlFieldName = "";
-                    $htmlField = "";
-                    $htmlData = "";
-                    $CategoryName = "";
-                    $temp++;
                 }
             }
         }
         // dd($html);
 
-        return view('assets-setup', compact('CampaignData', 'html', 'id', 'tags'));
+        return view('asset.add', compact('CampaignData', 'html', 'id', 'tags'));
     }
 
     /**
@@ -392,6 +398,8 @@ class AssetsController extends Controller
         //
         // $CampaignData = Campaign::with("Flight.FlightConnection.AdvertisementType", 'Assets')->where('id', $id)->first();
         $CampaignData = Campaign::with("Flight.FlightConnection.CategoryMaster", 'Flight.FlightConnection.Assets')->where('id', $id)->first();
+
+
 
 
         // dd($CampaignData->toArray());
@@ -419,20 +427,25 @@ class AssetsController extends Controller
                     if ($FlightConnection->Assets->isNotEmpty()) {
                         $t++;
                         foreach ($FlightConnection->Assets as $Asset) {
+
                             $Category = CategoryMaster::where('id', $Asset->category_id)->first();
                             $AdvertisementTypeSelected = AdvertisementType::where('id', $Asset->advertisement_id)->first();
+                            // dd($AdvertisementTypeSelected->toArray());
+                            
                             $FlightConnection = FlightConnection::where('id', $Asset->flight_connection_id)->first();
 
 
                             $AllPublisherCategory = PublisherMaster::where('category_id', $Asset->category_id)->get();
                             $AdvertisementType = AdvertisementType::where('category_master_id', $Asset->category_id)->get();
 
-                            // dd($PublisherMaster);
+
                             if (strtolower($Category->name) == 'social') {
                                 if (is_numeric($Asset->publisher_id)) {
                                     $PublisherMaster = PublisherMaster::where('id', $Asset->publisher_id)->first();
                                 }
                                 $CategoryName = 'social';
+
+                                // dd($AdvertisementTypeSelected->name);
 
                                 $htmlFieldName .= '<p class="text-base font-normal w-32" >Publisher</p>';
                                 // $htmlField .= '<input type="text" value="" name="AdPublisher[' . $Flights->id . '][' . $Connection->id . '][' . $Connection->language . '][' . $Connection->type . '][' . $Connection->CategoryMaster->id . '][]" class="input input-bordered input-primary w-32 rounded-md" placeholder="publisher"  />';
@@ -449,6 +462,7 @@ class AssetsController extends Controller
                                     $htmlField .= '<option ' . ($Asset->advertisement_id == $Ads->id ? 'selected' : '')  . ' value="' . $Ads->id . '">' . $Ads->name . '</option>';
                                 }
                                 $htmlField .= '</select>';
+
                                 if (strtolower($PublisherMaster->name) == 'meta') {
                                     if (strtolower($AdvertisementTypeSelected->name) == 'fb feed') {
                                         $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Format</p>';
@@ -1070,7 +1084,7 @@ class AssetsController extends Controller
                                 if (strtolower($AdvertisementTypeSelected->name) == 'billboard') {
                                     $htmlFieldName .= '<p class="text-base font-normal w-32" >Ad Size</p>
                                     <p class="text-base font-normal w-32" >kB/s</p>';
-                                    $htmlField .= '<select class="select select-primary w-32 rounded-md" name="AdSize[' . $Asset->flight_id . '][' . $Asset->flight_connection_id . '][' . $FlightConnection->language . '][' . $FlightConnection->type . '][' . $FlightConnection->category_id . '][' . $Asset->id . '][]" >
+                                     $htmlField .= '<select class="select select-primary w-32 rounded-md" name="AdSize[' . $Asset->flight_id . '][' . $Asset->flight_connection_id . '][' . $FlightConnection->language . '][' . $FlightConnection->type . '][' . $FlightConnection->category_id . '][' . $Asset->id . '][]" >
                                             <option value="970x250">970x250</option>
                                         </select>';
 
@@ -1289,11 +1303,13 @@ class AssetsController extends Controller
                                 }
                                 $htmlField .= '</select>';
                                 $htmlFieldName .= '
-                                <p class="text-base font-normal w-32" >Duration</p>
-                                <p class="text-base font-normal w-32" >File Type</p>
-                                <p class="text-base font-normal w-32" >Versions</p>
-                                <p class="text-base font-normal w-32" >Publisher Specs</p>
+
                                 ';
+
+                                // <p class="text-base font-normal w-32" >Duration</p>
+                                // <p class="text-base font-normal w-32" >File Type</p>
+                                // <p class="text-base font-normal w-32" >Versions</p>
+                                // <p class="text-base font-normal w-32" >Publisher Specs</p>
 
                                 $htmlField .= '<input placeholder="eg. 6s, 15s, static" type="text" value="' . $Asset->ad_duration . '" name="AdDuration[' . $Asset->flight_id . '][' . $Asset->flight_connection_id . '][' . $FlightConnection->language . '][' . $FlightConnection->type . '][' . $FlightConnection->category_id . '][' . $Asset->id . '][]" class="input input-bordered input-primary w-32 rounded-md"/>';
 
@@ -1565,7 +1581,7 @@ class AssetsController extends Controller
             }
         }
 
-        return view('edit-assets', compact('CampaignData', 'html', 'id', 'tags'));
+        return view('asset.edit', compact('CampaignData', 'html', 'id', 'tags'));
     }
 
     /**
@@ -1625,24 +1641,6 @@ class AssetsController extends Controller
 
                                 foreach ($categoryDate as $indexKey => $Data) {
                                     $Assets = new Assets([
-                                        // 'campaign_id' => $request->CampaignId,
-                                        // 'flight_id' => $FlightKey,
-                                        // 'flight_connection_id' => $FlightConnectionKey,
-                                        // 'category_id' => $categoryKey,
-                                        // 'publisher_id' => $request->NewAdPublisher[$FlightKey][$FlightConnectionKey][$languageKey][$typeKey][$categoryKey][$indexKey] ?? NULL,
-                                        // 'advertisement_id' => $Data ?? NULL,
-                                        // 'ad_format' => $request->NewAdFormate[$FlightKey][$FlightConnectionKey][$languageKey][$typeKey][$categoryKey][$indexKey] ?? NULL,
-                                        // 'ad_size' => $request->NewAdSize[$FlightKey][$FlightConnectionKey][$languageKey][$typeKey][$categoryKey][$indexKey] ?? NULL,
-                                        // 'colour' => $request->NewAdColour[$FlightKey][$FlightConnectionKey][$languageKey][$typeKey][$categoryKey][$indexKey] ?? NULL,
-                                        // 'resolution' => $request->NewAdResolution[$FlightKey][$FlightConnectionKey][$languageKey][$typeKey][$categoryKey][$indexKey] ?? NULL,
-                                        // 'file_type' => $request->NewAdFileType[$FlightKey][$FlightConnectionKey][$languageKey][$typeKey][$categoryKey][$indexKey] ?? NULL,
-                                        // 'technical' => $request->NewAdTechnical[$FlightKey][$FlightConnectionKey][$languageKey][$typeKey][$categoryKey][$indexKey] ?? NULL,
-                                        // 'social_spec_1' => $request->NewAdSocialSpec1[$FlightKey][$FlightConnectionKey][$languageKey][$typeKey][$categoryKey][$indexKey] ?? NULL,
-                                        // 'social_spec_2' => $request->NewAdSocialSpec2[$FlightKey][$FlightConnectionKey][$languageKey][$typeKey][$categoryKey][$indexKey] ?? NULL,
-                                        // 'social_spec_3' => $request->NewAdSocialSpec3[$FlightKey][$FlightConnectionKey][$languageKey][$typeKey][$categoryKey][$indexKey] ?? NULL,
-                                        // 'conversion' => $request->NewAdConversion[$FlightKey][$FlightConnectionKey][$languageKey][$typeKey][$categoryKey][$indexKey] ?? NULL,
-                                        // 'due_to_publisher' => $request->NewAdDate[$FlightKey][$FlightConnectionKey][$languageKey][$typeKey][$categoryKey][$indexKey] ?? NULL,
-
 
                                         'campaign_id' => $request->CampaignId,
                                         'flight_id' => $FlightKey,
@@ -1671,19 +1669,9 @@ class AssetsController extends Controller
             }
         }
 
-        // function processAssets($data)
-        // {
-        //     foreach ($data as $key => $value) {
-        //         if (is_array($value)) {
-        //             processAssets($value);
-        //         } else {
-        //             echo $value;
-        //         }
-        //     }
-        // }
         // processAssets($request->NewAdType);
 
-        // return view('campaign-details', compact('Campaigns', 'id', 'success'));
+        // return view('campaign.dashboard', compact('Campaigns', 'id', 'success'));
         // return redirect()->action([TeamController::class, 'managePeople'], compact('success'));
         return redirect()->route('campaign-show', ['id' => $id, 'success' => $success]);
     }
@@ -1700,6 +1688,8 @@ class AssetsController extends Controller
     {
         // $categoryId = $request->input('categoryId');
         $AdvertisementType = AdvertisementType::where('publisher_master_id', $request->publisher_Id)->get();
+
+        // dd($request->publisher_Id);
 
         return response()->json($AdvertisementType);
     }

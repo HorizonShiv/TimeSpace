@@ -21,7 +21,7 @@ class FlightController extends Controller
             $Campaign = Campaign::with("User")->where('id', $request->id)->first();
             $CampaignMember = CampaignMember::with("User")->where('campaign_id', $request->id)->get();
             $Language = CampaignLanguages::where('campaign_id', $request->id)->get();
-            return view('add-flight', compact('Campaign', 'CampaignMember', 'Language'));
+            return view('flight.add', compact('Campaign', 'CampaignMember', 'Language'));
         } else {
             return redirect()->action([CampaignController::class, 'create']);
         }
@@ -49,7 +49,7 @@ class FlightController extends Controller
             $typeData = $request->type[$key];
 
             foreach ($request->lang[$key] as $Datakey => $data) {
-                $tag = 'F' . $temp;
+                $tag = 'F_' . $flightcount . '_' . $temp;
                 foreach ($categorynData[$Datakey] as $cateData) {
                     $FlightConnection = new FlightConnection([
                         'campaign_id' => $request->CampaignId,
@@ -79,7 +79,7 @@ class FlightController extends Controller
         $Campaign = Campaign::with("User")->where('id', $id)->first();
         $CampaignMember = CampaignMember::with("User")->where('campaign_id', $id)->get();
         $Language = CampaignLanguages::where('campaign_id', $id)->get();
-        return view('edit-flight', compact('Flights', 'Campaign', 'CampaignMember', 'Language'));
+        return view('flight.edit', compact('Flights', 'Campaign', 'CampaignMember', 'Language'));
         // dd($id);
 
     }
@@ -157,7 +157,19 @@ class FlightController extends Controller
     public function deleteConnection(Request $request)
     {
         // dd($request->flightconnectionId);
-        $FlightConnection = FlightConnection::where('id', $request->flightconnectionId)->delete();
+        $FlightConnection = FlightConnection::where('flight_id', $request->flightId)->where('tag', $request->connectionTag)->delete();
+
+        if ($FlightConnection) {
+            return response()->json(['success' => true, 'redirect' => 1]);
+        } else {
+            return response()->json(['success' => false, 'redirect' => 1]);
+        }
+    }
+
+    public function deleteConnectionCategory(Request $request)
+    {
+        // dd($request->flightconnectionId);
+        $FlightConnection = FlightConnection::where('id', $request->connectionId)->delete();
 
         if ($FlightConnection) {
             return response()->json(['success' => true, 'redirect' => 1]);
@@ -198,17 +210,20 @@ class FlightController extends Controller
     {
         // dd($request->all());
         $flightcount = 1;
+        $tag = 'F_1_0';
         foreach ($request->startDate as $key => $startDate) {
 
             $flightId = $request->flightId;
 
-            $locationData = $request->location[$key];
-            $categorynData = $request->category[$key];
-            $typeData = $request->type[$key];
+            $locationData = $request->location[$key] ?? NULL;
+            $categoryData = $request->category[$key] ?? NULL;
+            $typeData = $request->type[$key] ?? NULL;
+            $flightConnectionId = $request->flightConnectionId[$key] ?? NULL;
+
 
             if (!empty($flightId[$key])) {
                 // echo $request->flightConnectionId;
-                $flightConnectionId = $request->flightConnectionId[$key];
+
                 $Flight = Flight::where('id', $flightId[$key])->update([
                     'in_market_start_date' => $startDate,
                     'in_market_end_date' => $request->endDate[$key],
@@ -216,31 +231,56 @@ class FlightController extends Controller
 
 
                 foreach ($request->lang[$key] as $Datakey => $data) {
-                    // dd($Datakey);
-                    // echo $request->flightConnectionId[$Datakey];
+
                     if (!empty($flightConnectionId[$Datakey])) {
-                        // echo $flightConnectionId[$Datakey];
-                        $FlightConnection = FlightConnection::where('id', $flightConnectionId[$Datakey])->update([
+
+                        $explodedArray = explode('#', $flightConnectionId[$Datakey]);
+                        $tag = $explodedArray[1];
+                        if (!empty($categoryData[$Datakey])) {
+                            foreach ($categoryData[$Datakey] as $category) {
+
+                                $FlightConnection = new FlightConnection([
+                                    'campaign_id' => $request->CampaignId,
+                                    'flight_id' => $flightId[$key],
+                                    'language' => $data,
+                                    'type' => $typeData[$Datakey],
+                                    'location' => $locationData[$Datakey],
+                                    'category_id' => $category,
+                                    'tag' => $tag,
+                                ]);
+                                $FlightConnection->save();
+                            }
+                        }
+                        $FlightConnection = FlightConnection::where('tag', $tag)->where('flight_id', $flightId[$key])->update([
                             'language' => $data,
                             'type' => $typeData[$Datakey],
                             'location' => $locationData[$Datakey],
-                            'category_id' => $categorynData[$Datakey],
                         ]);
                     } else {
-                        $FlightConnection = new FlightConnection([
-                            'campaign_id' => $request->CampaignId,
-                            'flight_id' => $flightId[$key],
-                            'language' => $data,
-                            'type' => $typeData[$Datakey],
-                            'location' => $locationData[$Datakey],
-                            'category_id' => $categorynData[$Datakey],
-                        ]);
-                        $FlightConnection->save();
+
+                        if (!empty($categoryData[$Datakey])) {
+                            $ExplodedTag = explode('_', $tag);
+                            $NewTag = 'F_' . $flightcount . '_' . ($ExplodedTag[2] + 1);
+                            foreach ($categoryData[$Datakey] as $category) {
+
+                                $FlightConnection = new FlightConnection([
+                                    'campaign_id' => $request->CampaignId,
+                                    'flight_id' => $flightId[$key],
+                                    'language' => $data,
+                                    'type' => $typeData[$Datakey],
+                                    'location' => $locationData[$Datakey],
+                                    'category_id' => $category,
+                                    'tag' => $NewTag,
+                                ]);
+                                $FlightConnection->save();
+                            }
+                        }
                     }
                 }
                 $flightcount++;
                 // dd($flightcount);
             } else {
+                $temp = 1;
                 $Flight = new Flight([
                     'campaign_id' => $request->CampaignId,
                     'flight_count' => $flightcount,
@@ -251,22 +291,29 @@ class FlightController extends Controller
                 $newflightId = $Flight->id;
 
                 foreach ($request->lang[$key] as $Datakey => $data) {
-
-                    $FlightConnection = new FlightConnection([
-                        'campaign_id' => $request->CampaignId,
-                        'flight_id' => $newflightId,
-                        'language' => $data,
-                        'type' => $typeData[$Datakey],
-                        'location' => $locationData[$Datakey],
-                        'category_id' => $categorynData[$Datakey],
-                    ]);
-                    $FlightConnection->save();
+                    $NewTag = 'F_' . $flightcount . '_' . $temp;
+                    if (!empty($categoryData[$Datakey])) {
+                        foreach ($categoryData[$Datakey] as $category) {
+                            $FlightConnection = new FlightConnection([
+                                'campaign_id' => $request->CampaignId,
+                                'flight_id' => $newflightId,
+                                'language' => $data,
+                                'type' => $typeData[$Datakey],
+                                'location' => $locationData[$Datakey],
+                                'category_id' => $category,
+                                'tag' => $NewTag,
+                            ]);
+                            $FlightConnection->save();
+                        }
+                    }
+                    $temp++;
                     $success = 'Successfully Added';
                 }
                 $flightcount++;
             }
         }
 
-        return redirect()->route('campaign-show', ['id' => $request->CampaignId]);
+        // return redirect()->route('campaign-show', ['id' => $request->CampaignId]);
+        return redirect()->route('assets-edit', ['id' => $request->CampaignId]);
     }
 }
